@@ -1,10 +1,10 @@
 ' ==========================================================================
-'  Web_NetTools v0.0.1 - fallback\start-check-ports.vbs
-'  Reserve launcher for "Check ports" (WEB_check_ports, port 3001).
+'  Web_NetTools v0.0.2 - fallback\start-check-nodes.vbs
+'  Reserve launcher for "Check nodes" (WEB_check_nodes, port 3000).
 '  Use it when PowerShell scripts are blocked by policy or antivirus.
 '
 '  Shortcut target example (Run: minimized):
-'     wscript.exe "C:\Tools\WebNetTools\launcher\fallback\start-check-ports.vbs"
+'     wscript.exe "C:\Tools\WebNetTools\launcher\fallback\start-check-nodes.vbs"
 '
 '  Optional argument: /nobrowser - do not open the browser.
 '
@@ -14,10 +14,10 @@
 Option Explicit
 
 Const APP_TITLE   = "Web_NetTools"
-Const APP_MARKER  = "WEB_check_ports"
-Const APP_DIRNAME = "check-ports"
-Const APP_PORT    = 3001
-Const LOG_NAME    = "check-ports.log"
+Const APP_MARKER  = "WEB_check_nodes"
+Const APP_DIRNAME = "check-nodes"
+Const APP_PORT    = 3000
+Const LOG_NAME    = "check-nodes.log"
 
 Dim fso, shell, launcherDir, root, appDir, logDir, logFile, openBrowser, i
 Set fso = CreateObject("Scripting.FileSystemObject")
@@ -37,7 +37,7 @@ Next
 
 If Not fso.FileExists(fso.BuildPath(appDir, "server.js")) Then
     MsgBox "Application not found:" & vbCrLf & appDir & vbCrLf & vbCrLf & _
-           "Run install.bat from the Web_NetTools_v0.0.1 project first.", 16, APP_TITLE
+           "Run install.bat from the Web_NetTools_v0.0.2 project first.", 16, APP_TITLE
     WScript.Quit 1
 End If
 

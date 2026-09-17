@@ -8,7 +8,7 @@
 
 ```
 web-net-tools\
-└── Web_NetTools_v0.0.1\              дистрибутив установки (самодостаточный)
+└── Web_NetTools_v0.0.2\              дистрибутив установки (самодостаточный)
     ├── install.bat / install.ps1     установка (права администратора запрашиваются сами)
     ├── uninstall.bat / uninstall.ps1 удаление
     ├── update-packages.ps1           обновление приложений в packages
@@ -28,7 +28,7 @@ web-net-tools\
 1. Скачайте репозиторий (Code → Download ZIP) или клонируйте:
    `git clone https://github.com/nichroman/web-net-tools.git`
 2. Установите Node.js 14+ (для Windows 7 x86 — `node-v14.21.3-x86.msi`).
-3. Запустите `Web_NetTools_v0.0.1\install.bat` и подтвердите запрос UAC.
+3. Запустите `Web_NetTools_v0.0.2\install.bat` и подтвердите запрос UAC.
 4. На общем рабочем столе появятся ярлыки:
    * «Проверка узлов (Web_NetTools)» → http://localhost:3000
    * «Проверка портов (Web_NetTools)» → http://localhost:3001
@@ -37,7 +37,7 @@ web-net-tools\
 Списки узлов и результаты сканирования — в `C:\Tools\WebNetTools\check-nodes` и
 `...\check-ports`, журналы — в `...\logs`. Удаление — `uninstall.bat`.
 
-Подробности: `Web_NetTools_v0.0.1\README.md` и `Web_NetTools_v0.0.1\packages\README.txt`.
+Подробности: `Web_NetTools_v0.0.2\README.md` и `Web_NetTools_v0.0.2\packages\README.txt`.
 
 ## Отдельные репозитории утилит
 
@@ -46,7 +46,7 @@ web-net-tools\
 * вариант для Windows 7 x86 — https://github.com/nichroman/check-nodes-win7
 
 В этом репозитории утилиты поставляются в составе дистрибутива
-(`Web_NetTools_v0.0.1\packages`); их исходные проекты развиваются в отдельных
+(`Web_NetTools_v0.0.2\packages`); их исходные проекты развиваются в отдельных
 репозиториях, а копии в дистрибутиве обновляются скриптом `update-packages.ps1`.
 
 ## Что исправлено и добавлено

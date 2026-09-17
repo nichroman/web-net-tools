@@ -1,5 +1,5 @@
 ﻿# ==========================================================================
-#  Web_NetTools v0.0.1 - webnettools-common.ps1
+#  Web_NetTools v0.0.2 - webnettools-common.ps1
 #  Общие функции лаунчера: поиск Node.js, проверка порта и /api/health,
 #  скрытый запуск сервера, остановка своих процессов, журнал, сообщения.
 #
@@ -255,7 +255,7 @@ function Start-WebNetTool {
 
     if (($AppDir -eq '') -or (-not (Test-Path (Join-Path $AppDir 'server.js')))) {
         Write-WebNetToolsLog -LogFile $LogFile -Message ('ошибка: не найден server.js в каталоге "' + $AppDir + '"')
-        Send-WebNetToolsNotice -Icon 16 -LogFile $LogFile -NoDialogs:$NoDialogs -Text ('Приложение не найдено:' + [Environment]::NewLine + $AppDir + [Environment]::NewLine + [Environment]::NewLine + 'Запустите install.bat из проекта Web_NetTools_v0.0.1.')
+        Send-WebNetToolsNotice -Icon 16 -LogFile $LogFile -NoDialogs:$NoDialogs -Text ('Приложение не найдено:' + [Environment]::NewLine + $AppDir + [Environment]::NewLine + [Environment]::NewLine + 'Запустите install.bat из проекта Web_NetTools_v0.0.2.')
         return 1
     }
 

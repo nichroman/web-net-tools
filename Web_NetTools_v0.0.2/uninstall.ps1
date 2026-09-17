@@ -1,5 +1,5 @@
 ﻿<#
-    Web_NetTools v0.0.1 - uninstall.ps1
+    Web_NetTools v0.0.2 - uninstall.ps1
     Удаление установки: остановка серверов, удаление ярлыков и каталога установки.
 
     Запуск (нужны права администратора):
@@ -42,7 +42,7 @@ function Show-Ok([string]$Text) { Write-Host ('  [ok] ' + $Text) -ForegroundColo
 function Show-Info([string]$Text) { Write-Host ('       ' + $Text) }
 function Show-Err([string]$Text) { Write-Host ('  [x] ' + $Text) -ForegroundColor Red }
 
-Show-Head 'Web_NetTools v0.0.1 - удаление'
+Show-Head 'Web_NetTools v0.0.2 - удаление'
 Show-Info ('Каталог установки : ' + $InstallDir)
 Show-Info ('Рабочий стол      : ' + $DesktopDir)
 Show-Info ('Меню "Пуск"       : ' + $StartMenuDir)

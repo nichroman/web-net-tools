@@ -1,5 +1,5 @@
 ﻿<#
-    Web_NetTools v0.0.1 - install.ps1
+    Web_NetTools v0.0.2 - install.ps1
     Установка WEB_check_nodes_v0.0.4 и WEB_check_ports_v0.0.1 в ОС Windows так,
     чтобы программы были доступны ВСЕМ пользователям через ярлыки на общем
     рабочем столе (C:\Users\Public\Desktop) и в общем меню "Пуск".
@@ -31,7 +31,7 @@
         -SkipSearch     не искать в общих и пользовательских папках (только параметр,
                         packages, каталог установщика и соседние каталоги)
 
-    Схема размещения описана в README.md проекта Web_NetTools_v0.0.1.
+    Схема размещения описана в README.md проекта Web_NetTools_v0.0.2.
 #>
 
 param(
@@ -309,7 +309,7 @@ function Write-WebNetToolsInstallInfo {
     param([string]$InstallRoot, [string]$NodePath, [string]$NodeVersion, [string]$LauncherTarget, [string]$NodesSource, [string]$PortsSource)
     $lines = @()
     $lines += '=================================================================='
-    $lines += ' Web_NetTools v0.0.1 - установка для всех пользователей Windows'
+    $lines += ' Web_NetTools v0.0.2 - установка для всех пользователей Windows'
     $lines += '=================================================================='
     $lines += 'Дата установки : ' + (Get-Date -Format 'yyyy-MM-dd HH:mm')
     $lines += 'Каталог        : ' + $InstallRoot
@@ -364,7 +364,7 @@ function Write-WebNetToolsInstallInfo {
 #  Основной сценарий установки
 # ==========================================================================
 
-Show-Head 'Web_NetTools v0.0.1 - установка'
+Show-Head 'Web_NetTools v0.0.2 - установка'
 Show-Info ('Каталог установки : ' + $InstallDir)
 Show-Info ('Проверка узлов    : ' + $NodesSource)
 Show-Info ('Проверка портов   : ' + $PortsSource)
@@ -424,7 +424,7 @@ try {
         $lines += '  1) скопируйте каталог WEB_check_nodes_v0.0.4 (внутри должен быть server.js) в'
         $lines += '     "' + (Join-Path $PackagesDir $nodesDirName) + '" - установщик станет самодостаточным;'
         $lines += '  2) запустите: install.bat -NodesSource "полный путь к каталогу, где лежит server.js";'
-        $lines += '  3) положите каталог WEB_check_nodes_v0.0.4 рядом с каталогом Web_NetTools_v0.0.1.'
+        $lines += '  3) положите каталог WEB_check_nodes_v0.0.4 рядом с каталогом Web_NetTools_v0.0.2.'
         throw ($lines -join [Environment]::NewLine)
     }
 
@@ -441,7 +441,7 @@ try {
         $lines += '  1) скопируйте каталог WEB_check_ports_v0.0.1 (внутри должен быть server.js) в'
         $lines += '     "' + (Join-Path $PackagesDir $portsDirName) + '" - установщик станет самодостаточным;'
         $lines += '  2) запустите: install.bat -PortsSource "полный путь к каталогу, где лежит server.js";'
-        $lines += '  3) положите каталог WEB_check_ports_v0.0.1 рядом с каталогом Web_NetTools_v0.0.1.'
+        $lines += '  3) положите каталог WEB_check_ports_v0.0.1 рядом с каталогом Web_NetTools_v0.0.2.'
         throw ($lines -join [Environment]::NewLine)
     }
 

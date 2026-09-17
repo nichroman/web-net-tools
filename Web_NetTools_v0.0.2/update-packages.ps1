@@ -1,5 +1,5 @@
 ﻿<#
-    Web_NetTools v0.0.1 - update-packages.ps1
+    Web_NetTools v0.0.2 - update-packages.ps1
     Обновляет приложения в дистрибутиве: копирует актуальные каталоги утилит
     из проектов-источников в packages\check-nodes и packages\check-ports.
 
@@ -81,7 +81,7 @@ function Get-WebNetToolsAppVersion {
 
 # ==== Основной сценарий ====================================================
 
-Show-Head 'Web_NetTools v0.0.1 - обновление приложений в дистрибутиве'
+Show-Head 'Web_NetTools v0.0.2 - обновление приложений в дистрибутиве'
 Show-Info ('Источник (узлы) : ' + $NodesSource)
 Show-Info ('Источник (порты): ' + $PortsSource)
 Show-Info ('Дистрибутив     : ' + $packagesDir)
@@ -103,7 +103,7 @@ try {
 
     # Фиксируем состав дистрибутива: что и когда скопировано
     $lines = @()
-    $lines += 'Дистрибутив Web_NetTools v0.0.1 - состав каталога packages'
+    $lines += 'Дистрибутив Web_NetTools v0.0.2 - состав каталога packages'
     $lines += 'Обновлено: ' + (Get-Date -Format 'yyyy-MM-dd HH:mm')
     $lines += 'check-nodes <- ' + $NodesSource
     $lines += '  версия package.json: ' + (Get-WebNetToolsAppVersion -Path (Join-Path $packagesDir 'check-nodes'))
