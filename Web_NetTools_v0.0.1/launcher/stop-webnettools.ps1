@@ -9,7 +9,7 @@
 # ==========================================================================
 
 param(
-    [int[]]$Ports = @(3000, 3001),
+    [string]$Ports = '3000,3001',
     [string]$AppRoot = ''
 )
 
@@ -18,12 +18,20 @@ $launcherDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
 
 if ($AppRoot -eq '') { $AppRoot = Split-Path -Parent $launcherDir }
 
+# Порты можно задать списком: -Ports 3000,3001 или -Ports 3020
+$portList = @()
+foreach ($token in ($Ports -split '[,;\s]+')) {
+    if ($token -match '^\d+$') { $portList += [int]$token }
+}
+if ($portList.Count -eq 0) { $portList = @(3000, 3001) }
+
 Write-Host ''
 Write-Host 'Остановка серверов Web_NetTools...' -ForegroundColor Cyan
 Write-Host ('Каталог установки: ' + $AppRoot)
+Write-Host ('Порты: ' + ($portList -join ', '))
 Write-Host ''
 
-$report = Stop-WebNetToolProcess -Ports $Ports -AppRoot $AppRoot
+$report = Stop-WebNetToolProcess -Ports $portList -AppRoot $AppRoot
 
 if ($report.Count -eq 0) {
     Write-Host 'Запущенные серверы Web_NetTools не найдены.' -ForegroundColor Green

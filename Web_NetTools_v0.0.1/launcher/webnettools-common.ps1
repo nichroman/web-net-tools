@@ -246,6 +246,7 @@ function Start-WebNetTool {
         [string]$HealthMarker = 'WEB_check_nodes',
         [string]$LogFile = '',
         [int]$WaitSeconds = 20,
+        [string]$BindAddress = '127.0.0.1',
         [switch]$NoBrowser,
         [switch]$NoDialogs
     )
@@ -289,6 +290,12 @@ function Start-WebNetTool {
         return 2
     }
 
+    # Порт и адрес прослушивания задаёт сам ярлык: они передаются запускаемому
+    # процессу через переменные окружения, поэтому глобальные PORT/HOST на машине
+    # не влияют на работу ярлыков.
+    $env:PORT = [string]$Port
+    if ($BindAddress -ne '') { $env:HOST = $BindAddress }
+
     $command = '/c ""' + $nodeExe + '" "' + (Join-Path $AppDir 'server.js') + '" >> "' + $LogFile + '" 2>&1"'
     $wrapperProcess = $null
     try {
@@ -303,7 +310,7 @@ function Start-WebNetTool {
     if ($env:PORT) { $portEnvNote = $env:PORT }
     $hostEnvNote = 'не задана'
     if ($env:HOST) { $hostEnvNote = $env:HOST }
-    Write-WebNetToolsLog -LogFile $LogFile -Message ('запуск: ' + $Name + ', порт ' + $Port + ', каталог ' + $AppDir + ', node ' + $nodeExe + ', PORT=' + $portEnvNote + ', HOST=' + $hostEnvNote)
+    Write-WebNetToolsLog -LogFile $LogFile -Message ('запуск: ' + $Name + ', порт ' + $Port + ', адрес ' + $BindAddress + ', каталог ' + $AppDir + ', node ' + $nodeExe + ', PORT=' + $portEnvNote + ', HOST=' + $hostEnvNote)
 
     $ready = $false
     $exited = $false
@@ -335,16 +342,16 @@ function Start-WebNetTool {
 
         if ($exited) {
             $reason = 'Процесс сервера завершился сразу после запуска (обычно это занятый порт или ошибка в приложении).'
-            Write-WebNetToolsLog -LogFile $LogFile -Message ('сервер завершился сразу после запуска (PORT=' + $portEnv + ', HOST=' + $hostEnv + ')')
+            Write-WebNetToolsLog -LogFile $LogFile -Message ('сервер завершился сразу после запуска (порт ' + $Port + ', адрес ' + $BindAddress + ')')
         } else {
             $reason = 'Сервер не ответил за ' + $WaitSeconds + ' секунд на порту ' + $Port + '.'
-            Write-WebNetToolsLog -LogFile $LogFile -Message ('сервер не ответил за ' + $WaitSeconds + ' с (PORT=' + $portEnv + ', HOST=' + $hostEnv + ')')
+            Write-WebNetToolsLog -LogFile $LogFile -Message ('сервер не ответил за ' + $WaitSeconds + ' с (порт ' + $Port + ', адрес ' + $BindAddress + ')')
         }
 
         $message = $reason + [Environment]::NewLine + [Environment]::NewLine +
             'Проверьте журнал:' + [Environment]::NewLine + $LogFile + [Environment]::NewLine + [Environment]::NewLine +
-            'Переменные окружения: PORT=' + $portEnv + ', HOST=' + $hostEnv + [Environment]::NewLine +
-            'Если PORT или HOST заданы глобально, сервер слушает другой порт: удалите переменные или задайте нужный порт в сценарии ярлыка.'
+            'Запуск выполнен со значениями: PORT=' + $portEnv + ', HOST=' + $hostEnv + [Environment]::NewLine +
+            'Проверьте, не занят ли порт другой программой: netstat -ano | findstr :' + $Port
 
         Send-WebNetToolsNotice -Icon 48 -LogFile $LogFile -NoDialogs:$NoDialogs -Text $message
         return 2
@@ -418,7 +425,7 @@ function Stop-WebNetToolProcess {
                 $owned = $true
             }
             if (-not $owned) {
-                $report += ('процесс ' + $name + ' (PID ' + $processId + ') не относится к Web_NetTools и не остановлен')
+                $report += ('процесс ' + $name + ' (PID ' + $processId + ') запущен из другого каталога (другая установка) и не остановлен')
                 continue
             }
         }

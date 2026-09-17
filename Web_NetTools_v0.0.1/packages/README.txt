@@ -1,26 +1,46 @@
-ПАПКА packages - ИСХОДНИКИ ПРОГРАММ ДЛЯ УСТАНОВЩИКА
-==================================================
+ПАПКА packages - ПРИЛОЖЕНИЯ, КОТОРЫЕ УСТАНАВЛИВАЕТ ДИСТРИБУТИВ
+==============================================================
 
-Положите сюда каталоги с программами, и установщик найдёт их автоматически:
+Здесь лежат готовые к установке утилиты, поэтому дистрибутив самодостаточен:
+install.bat находит их автоматически и не требует соседних каталогов.
 
-    packages\check-nodes\   <- содержимое WEB_check_nodes_v0.0.4 (внутри server.js, index.html, node_modules)
-    packages\check-ports\   <- содержимое WEB_check_ports_v0.0.1
+    packages\check-nodes\   WEB_check_nodes v0.0.4 - проверка узлов (ping), порт 3000
+                            server.js, index.html, package.json, node_modules, *_nodes.csv
+    packages\check-ports\   WEB_check_ports v0.0.1 - сканер TCP-портов, порт 3001
+                            server.js, index.html, package.json, node_modules, hosts.csv
+    packages\VERSION.txt    что и когда скопировано (создаёт update-packages.ps1)
 
-Вложенность допустима: если каталог имеет вид
-    packages\WEB_check_nodes_v0.0.4\WEB_check_nodes_v0.0.4\server.js
-установщик найдёт server.js сам (проверяются вложенные подпапки).
+Зависимости (node_modules: express, cors) уже входят в поставку, поэтому для
+установки на целевой машине нужен только Node.js - ни npm, ни доступ в интернет
+не требуются.
 
-Зачем это нужно:
-  * установщик становится самодостаточным - его можно положить в общую папку
-    (например C:\distr\Web_NetTools) и запускать на любом компьютере;
-  * не требуется доступ к рабочему столу или профилю конкретного пользователя.
+ОБНОВЛЕНИЕ ПРИЛОЖЕНИЙ В ДИСТРИБУТИВЕ
+-----------------------------------
+    powershell -NoProfile -ExecutionPolicy Bypass -File ..\update-packages.ps1 -Force
 
-Определение программы выполняется по содержимому server.js, поэтому имена
-каталогов могут быть любыми.
+Скрипт update-packages.ps1 (лежит рядом с install.bat) копирует актуальное
+содержимое проектов-источников в packages\check-nodes и packages\check-ports:
 
-Другие способы указать исходники:
-  * install.bat -NodesSource "C:\путь\WEB_check_nodes_v0.0.4" -PortsSource "C:\путь\WEB_check_ports_v0.0.1"
-  * положить каталоги рядом с каталогом установщика Web_NetTools_v0.0.1.
+    ..\WEB_check_nodes_v0.0.4  ->  packages\check-nodes
+    ..\WEB_check_ports_v0.0.1  ->  packages\check-ports
+
+Пути можно задать явно:
+
+    ... -File update-packages.ps1 -NodesSource "C:\distr\WEB_check_nodes_v0.0.4" -PortsSource "C:\distr\WEB_check_ports_v0.0.1" -Force
+
+Полезно перед обновлением выполнить npm install в каталоге-источнике, чтобы
+в дистрибутив попали актуальные зависимости.
+
+Порядок поиска приложений установщиком
+--------------------------------------
+1) параметр -NodesSource / -PortsSource;
+2) эта папка packages (каталог check-nodes / check-ports);
+3) каталог установщика и соседние с ним каталоги (в том числе вложенные);
+4) общие и пользовательские папки (C:\Users\Public\Desktop, Desktop, Downloads,
+   Documents, C:\distr, C:\Tools).
+
+Программа определяется по содержимому server.js, поэтому имена папок могут быть
+любыми, а вложенность допустима.
 
 Результат установки не зависит от места исходников: программы копируются в общий
 каталог C:\Tools\WebNetTools с правами "Изменение" для группы "Пользователи",
