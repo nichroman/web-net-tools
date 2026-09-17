@@ -1,0 +1,16 @@
+{
+  "name": "web-check-ports",
+  "version": "0.0.1",
+  "description": "WEB_check_ports - веб-сканер TCP-портов (аналог port_scanner.ps1 / port443_scanner.ps1)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "4.17.3",
+    "cors": "2.8.5"
+  },
+  "engines": {
+    "node": ">=13.0.0"
+  }
+}

@@ -1,0 +1,12 @@
+﻿Address;Comment
+10.25.200.20;Rocket M5 (Rocket Dish) Drenag damba (ПНС2.1)
+10.25.200.21;Rocket AC (Omni) Damba (ПНС2.1)
+10.25.200.22;NanoStation M5 PlNS1
+10.25.200.23;NanoStation M5 (sector) PlNS2
+10.25.200.24;NanoStation M5 PlNS3
+10.25.200.25;NanoStation M5 Zumph-4
+10.27.216.100;PLC - Drenag pumps
+10.27.216.130;PLC - PlNS1
+10.27.216.140;PLC - PlNS2
+10.27.216.150;PLC - PlNS3
+10.27.217.150;PLC - Zumph

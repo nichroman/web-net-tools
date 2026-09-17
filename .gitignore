@@ -1,0 +1,11 @@
+# зависимости устанавливаются на целевой машине (npm install)
+node_modules/
+
+# каталоги журналов работы серверов
+logs/
+*.log
+
+# локальные результаты сканирования
+scan_results*.csv
+Port*Opened.txt
+Port*Closed.txt

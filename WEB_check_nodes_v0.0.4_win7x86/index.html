@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Проверка доступности сетевых узлов</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #e8ecef;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .header-icon {
+            width: 100px;
+            height: auto;
+            float: left;
+            margin-right: 20px;
+        }
+
+        .header-content {
+            overflow: hidden;
+        }
+
+        .header h1 {
+            color: white;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .header p {
+            color: #bdc3c7;
+            font-size: 16px;
+        }
+
+        .clearfix::after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+
+        .upload-section {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .upload-section h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .info-box {
+            background: #e8f8f5;
+            border-left: 4px solid #1abc9c;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            color: #16a085;
+            text-align: left;
+        }
+
+        .server-status {
+            padding: 12px 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .server-status.online {
+            background: #e8f8f5;
+            color: #16a085;
+            border: 1px solid #1abc9c;
+        }
+
+        .server-status.offline {
+            background: #fdedec;
+            color: #e74c3c;
+            border: 1px solid #e74c3c;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+        .status-dot.online { background: #1abc9c; }
+        .status-dot.offline { background: #e74c3c; }
+
+        .ping-count-section {
+            margin: 20px auto;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            max-width: 400px;
+        }
+
+        .ping-count-label {
+            display: block;
+            margin-bottom: 10px;
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .ping-count-input {
+            width: 120px;
+            padding: 10px;
+            border: 2px solid #1abc9c;
+            border-radius: 5px;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        .ping-count-input:focus {
+            outline: none;
+            border-color: #16a085;
+        }
+
+        .ping-hint {
+            display: block;
+            margin-top: 8px;
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+
+        .dataset-section {
+            margin: 20px auto;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            max-width: 400px;
+        }
+
+        .dataset-label {
+            display: block;
+            margin-bottom: 10px;
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .dataset-select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #3498db;
+            border-radius: 5px;
+            font-size: 14px;
+            color: #2c3e50;
+            background: white;
+            cursor: pointer;
+        }
+
+        .dataset-select:focus {
+            outline: none;
+            border-color: #2980b9;
+        }
+
+        .dataset-select:disabled {
+            background: #ecf0f1;
+            cursor: not-allowed;
+            color: #95a5a6;
+        }
+
+        .dataset-info {
+            display: block;
+            margin-top: 8px;
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+
+        .separator {
+            border: none;
+            border-top: 2px dashed #ecf0f1;
+            margin: 25px 0;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            margin-top: 20px;
+        }
+
+        .file-input-wrapper input[type="file"] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+
+        .file-input-btn {
+            background: #1abc9c;
+            color: white;
+            padding: 15px 40px;
+            border-radius: 5px;
+            display: inline-block;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .file-input-btn:hover {
+            background: #16a085;
+        }
+
+        .file-input-btn:disabled,
+        .file-input-btn.disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 40px;
+            background: #ecf0f1;
+            border-radius: 20px;
+            overflow: hidden;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #1abc9c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            width: 0%;
+        }
+
+        .stats-section {
+            background: #2c3e50;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .stats-title {
+            font-size: 24px;
+            color: white;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+        }
+
+        .stats-row {
+            display: table-row;
+        }
+
+        .stat-card {
+            display: table-cell;
+            background: #34495e;
+            padding: 20px;
+            text-align: center;
+            border-left: 4px solid;
+            width: 25%;
+        }
+
+        .stat-card.available { border-left-color: #1abc9c; }
+        .stat-card.partial { border-left-color: #f39c12; }
+        .stat-card.unavailable { border-left-color: #e74c3c; }
+        .stat-card.total { border-left-color: #3498db; }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #bdc3c7;
+            font-size: 14px;
+        }
+
+        .results-section {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .results-title {
+            font-size: 20px;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .result-item {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            overflow: hidden;
+            background: #f8f9fa;
+        }
+
+        .result-item.available { border-left: 4px solid #1abc9c; }
+        .result-item.partial { border-left: 4px solid #f39c12; }
+        .result-item.unavailable { border-left: 4px solid #e74c3c; }
+
+        .result-info {
+            float: left;
+            width: 70%;
+        }
+
+        .result-status-wrap {
+            float: right;
+            width: 28%;
+            text-align: right;
+        }
+
+        .result-node {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .result-comment {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .result-details {
+            margin-top: 5px;
+            color: #7f8c8d;
+            font-size: 13px;
+        }
+
+        .result-status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            display: inline-block;
+        }
+
+        .status-available { background: #e8f8f5; color: #1abc9c; }
+        .status-partial { background: #fef5e7; color: #f39c12; }
+        .status-unavailable { background: #fdedec; color: #e74c3c; }
+
+        .export-btn {
+            background: #1abc9c;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+
+        .export-btn:hover {
+            background: #16a085;
+        }
+
+        .current-check {
+            text-align: center;
+            color: #2c3e50;
+            font-weight: 600;
+            margin: 15px 0;
+            padding: 10px;
+            background: #fff3cd;
+            border-radius: 5px;
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            .header-icon {
+                float: none;
+                display: block;
+                margin: 0 auto 15px auto;
+            }
+            .header-content {
+                text-align: center;
+            }
+            .stat-card {
+                display: block;
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            .result-info,
+            .result-status-wrap {
+                float: none;
+                width: 100%;
+                text-align: left;
+            }
+            .result-status-wrap {
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header clearfix">
+            <img src="monkey.png" alt="Monkey with laptop" class="header-icon" />
+            <div class="header-content">
+                <h1>🔍 Проверка доступности сетевых узлов</h1>
+                <p>Проверяет доступность узлов через реальный ICMP ping (Node.js бэкенд)</p>
+            </div>
+        </div>
+
+        <div class="upload-section">
+            <h2>Загрузка файла с узлами</h2>
+            
+            <div id="serverStatus" class="server-status offline">
+                <span class="status-dot offline"></span>
+                <span id="serverStatusText">Подключение к серверу...</span>
+            </div>
+            
+            <div class="info-box">
+                Поддерживаются форматы: CSV (разделитель ";") и TXT (один адрес на строку)<br>
+                <strong>Метод проверки:</strong> Реальный ICMP ping через Node.js бэкенд
+            </div>
+
+            <div class="dataset-section">
+                <label class="dataset-label" for="datasetSelect">📋 Выбор набора данных:</label>
+                <select id="datasetSelect" class="dataset-select" disabled>
+                    <option value="">Загрузка списка...</option>
+                </select>
+                <span class="dataset-info" id="datasetInfo"></span>
+            </div>
+
+            <hr class="separator" />
+
+            <div class="ping-count-section">
+                <label class="ping-count-label" for="pingCount">Количество ping-запросов:</label>
+                <input type="number" id="pingCount" class="ping-count-input" value="10" min="1" max="100" />
+                <span class="ping-hint">Диапазон: 1-100 (по умолчанию: 10)</span>
+                
+                <div class="file-input-wrapper">
+                    <div class="file-input-btn" id="fileBtn">
+                        📁 Выбрать файл
+                    </div>
+                    <input type="file" id="fileInput" accept=".csv,.txt" />
+                </div>
+            </div>
+            
+            <div class="current-check" id="currentCheck"></div>
+            
+            <div class="progress-bar" id="progressBar">
+                <div class="progress-fill" id="progressFill">0%</div>
+            </div>
+        </div>
+
+        <div class="stats-section" id="statsSection">
+            <h2 class="stats-title">📊 Статистика проверки</h2>
+            <div class="stats-grid">
+                <div class="stats-row">
+                    <div class="stat-card available">
+                        <div class="stat-value" style="color: #1abc9c;" id="statAvailable">0</div>
+                        <div class="stat-label">Доступно</div>
+                    </div>
+                    <div class="stat-card partial">
+                        <div class="stat-value" style="color: #f39c12;" id="statPartial">0</div>
+                        <div class="stat-label">Частично доступно</div>
+                    </div>
+                    <div class="stat-card unavailable">
+                        <div class="stat-value" style="color: #e74c3c;" id="statUnavailable">0</div>
+                        <div class="stat-label">Недоступно</div>
+                    </div>
+                    <div class="stat-card total">
+                        <div class="stat-value" style="color: #3498db;" id="statTotal">0</div>
+                        <div class="stat-label">Всего узлов</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="results-section" id="resultsSection">
+            <h2 class="results-title"> Результаты проверки</h2>
+            <div id="resultsList"></div>
+            <button class="export-btn" id="exportBtn">💾 Экспорт в CSV</button>
+        </div>
+    </div>
+
+    <script>
+        // IE11 совместимый код (ES5)
+        var nodes = [];
+        var results = [];
+        var pingCount = 10;
+        var serverOnline = false;
+        var currentDataset = null;
+
+        var API_BASE = window.location.protocol + '//' + window.location.hostname + ':' + window.location.port;
+
+        // XMLHttpRequest вместо fetch
+        function makeRequest(url, callback) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', url, true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        try {
+                            var data = JSON.parse(xhr.responseText);
+                            callback(null, data);
+                        } catch (e) {
+                            callback(e, null);
+                        }
+                    } else {
+                        callback(new Error('HTTP ' + xhr.status), null);
+                    }
+                }
+            };
+            xhr.onerror = function() {
+                callback(new Error('Network error'), null);
+            };
+            xhr.send();
+        }
+
+        // XMLHttpRequest для текстовых данных (не JSON)
+        function makeTextRequest(url, callback) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', url, true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        callback(null, xhr.responseText);
+                    } else {
+                        callback(new Error('HTTP ' + xhr.status), null);
+                    }
+                }
+            };
+            xhr.onerror = function() {
+                callback(new Error('Network error'), null);
+            };
+            xhr.send();
+        }
+
+        // Загрузка списка доступных наборов данных
+        function loadDatasets() {
+            var url = API_BASE + '/api/datasets';
+            makeRequest(url, function(err, data) {
+                var select = document.getElementById('datasetSelect');
+                var info = document.getElementById('datasetInfo');
+                
+                if (!err && data && data.datasets) {
+                    select.innerHTML = '';
+                    
+                    var defaultOption = document.createElement('option');
+                    defaultOption.value = '';
+                    defaultOption.textContent = '-- Выберите набор данных --';
+                    select.appendChild(defaultOption);
+                    
+                    for (var i = 0; i < data.datasets.length; i++) {
+                        var option = document.createElement('option');
+                        option.value = data.datasets[i];
+                        option.textContent = data.datasets[i];
+                        select.appendChild(option);
+                    }
+                    
+                    select.disabled = false;
+                    info.textContent = 'Доступно наборов: ' + data.datasets.length;
+                } else {
+                    select.innerHTML = '<option value="">Ошибка загрузки</option>';
+                    select.disabled = true;
+                    info.textContent = '';
+                }
+            });
+        }
+
+        // Обработчик выбора набора данных
+        document.getElementById('datasetSelect').onchange = function() {
+            var filename = this.value;
+            
+            if (!filename) {
+                currentDataset = null;
+                document.getElementById('datasetInfo').textContent = '';
+                return;
+            }
+            
+            if (!serverOnline) {
+                alert('Сервер недоступен! Запустите команду: npm start');
+                this.value = '';
+                return;
+            }
+            
+            currentDataset = filename;
+            document.getElementById('datasetInfo').textContent = 'Загрузка ' + filename + '...';
+            
+            var url = API_BASE + '/api/dataset/' + encodeURIComponent(filename);
+            makeTextRequest(url, function(err, data) {
+                if (!err && data) {
+                    // CSV файлы всегда имеют заголовок в первой строке
+                    parseFile(data, filename, true);
+                } else {
+                    alert('Ошибка загрузки файла: ' + filename);
+                    document.getElementById('datasetInfo').textContent = '';
+                    document.getElementById('datasetSelect').value = '';
+                    currentDataset = null;
+                }
+            });
+        };
+
+        // Проверка доступности сервера
+        function checkServerStatus() {
+            var url = API_BASE + '/api/ping?host=127.0.0.1&count=1';
+            makeRequest(url, function(err, data) {
+                var statusEl = document.getElementById('serverStatus');
+                var statusTextEl = document.getElementById('serverStatusText');
+                var fileBtn = document.getElementById('fileBtn');
+                
+                if (!err && data) {
+                    serverOnline = true;
+                    statusEl.className = 'server-status online';
+                    statusTextEl.innerHTML = '<span class="status-dot online"></span>✅ Сервер подключён (ICMP ping активен)';
+                    fileBtn.className = 'file-input-btn';
+                    loadDatasets();
+                } else {
+                    serverOnline = false;
+                    statusEl.className = 'server-status offline';
+                    statusTextEl.innerHTML = '<span class="status-dot offline"></span>❌ Сервер недоступен. Запустите: npm start';
+                    fileBtn.className = 'file-input-btn disabled';
+                    
+                    var dsSelect = document.getElementById('datasetSelect');
+                    if (dsSelect) {
+                        dsSelect.innerHTML = '<option value="">Сервер отключён</option>';
+                        dsSelect.disabled = true;
+                    }
+                    currentDataset = null;
+                }
+            });
+        }
+
+        // Обработчик выбора файла
+        document.getElementById('fileInput').onchange = function(event) {
+            var file = event.target.files[0];
+            if (!file) return;
+
+            if (!serverOnline) {
+                alert('Сервер недоступен! Запустите команду: npm start');
+                return;
+            }
+
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                // Для ручного файла определяем, есть ли заголовок по расширению
+                var skipHeader = file.name.indexOf('.csv') !== -1;
+                parseFile(e.target.result, file.name, skipHeader);
+            };
+            reader.readAsText(file);
+        };
+
+        // Обработчик изменения количества пингов
+        document.getElementById('pingCount').onchange = function() {
+            var value = parseInt(this.value, 10);
+            if (isNaN(value) || value < 1) value = 1;
+            if (value > 100) value = 100;
+            pingCount = value;
+            this.value = value;
+        };
+
+        // Парсинг файла
+        function parseFile(content, fileName, skipHeader) {
+            nodes = [];
+            var lines = content.split('\n');
+            var startIndex = 0;
+            
+            if (skipHeader === true && lines.length > 0) {
+                startIndex = 1;
+            }
+            
+            if (fileName.indexOf('.csv') !== -1) {
+                for (var i = startIndex; i < lines.length; i++) {
+                    var values = lines[i].split(';');
+                    if (values.length >= 1 && values[0].trim()) {
+                        nodes.push({
+                            address: values[0].trim(),
+                            comment: values[1] ? values[1].trim() : 'Без комментария'
+                        });
+                    }
+                }
+            } else {
+                for (var i = 0; i < lines.length; i++) {
+                    var trimmed = lines[i].trim();
+                    if (trimmed) {
+                        nodes.push({
+                            address: trimmed,
+                            comment: 'Без комментария'
+                        });
+                    }
+                }
+            }
+            
+            if (nodes.length > 0) {
+                document.getElementById('progressBar').style.display = 'block';
+                checkNodes();
+            }
+        }
+
+        // Проверка узлов (последовательно)
+        function checkNodes() {
+            results = [];
+            var progressBar = document.getElementById('progressBar');
+            var progressFill = document.getElementById('progressFill');
+            var currentCheck = document.getElementById('currentCheck');
+            var fileBtn = document.getElementById('fileBtn');
+
+            fileBtn.className = 'file-input-btn disabled';
+            currentCheck.style.display = 'block';
+
+            var currentIndex = 0;
+
+            function checkNext() {
+                if (currentIndex >= nodes.length) {
+                    progressBar.style.display = 'none';
+                    currentCheck.style.display = 'none';
+                    fileBtn.className = 'file-input-btn';
+                    displayResults();
+                    return;
+                }
+
+                var node = nodes[currentIndex];
+                currentCheck.textContent = '🔄 Проверяю ' + node.address + ' (' + node.comment + ')...';
+                
+                var url = API_BASE + '/api/ping?host=' + encodeURIComponent(node.address) + 
+                          '&count=' + pingCount + '&timeout=1000';
+                
+                makeRequest(url, function(err, data) {
+                    if (!err && data) {
+                        results.push({
+                            Node: data.host,
+                            Status: data.status,
+                            AvgTime: data.avgTime !== null ? Math.round(data.avgTime) : 'N/A',
+                            MinTime: data.minTime !== null ? Math.round(data.minTime) : 'N/A',
+                            MaxTime: data.maxTime !== null ? Math.round(data.maxTime) : 'N/A',
+                            LostPercent: data.lostPercent,
+                            SuccessPackets: data.successPackets,
+                            Comment: node.comment
+                        });
+                    } else {
+                        results.push({
+                            Node: node.address,
+                            Status: 'Ошибка',
+                            AvgTime: 'N/A',
+                            MinTime: 'N/A',
+                            MaxTime: 'N/A',
+                            LostPercent: 100,
+                            SuccessPackets: '0/' + pingCount,
+                            Comment: node.comment
+                        });
+                    }
+
+                    currentIndex++;
+                    var progress = Math.round((currentIndex / nodes.length) * 100);
+                    progressFill.textContent = progress + '%';
+                    progressFill.style.width = progress + '%';
+                    
+                    checkNext();
+                });
+            }
+
+            checkNext();
+        }
+
+        // Отображение результатов
+        function displayResults() {
+            document.getElementById('statsSection').style.display = 'block';
+            document.getElementById('resultsSection').style.display = 'block';
+            updateStats();
+            updateResultsList();
+        }
+
+        function updateStats() {
+            var available = 0;
+            var partial = 0;
+            var unavailable = 0;
+            
+            for (var i = 0; i < results.length; i++) {
+                if (results[i].Status === 'Доступен') available++;
+                else if (results[i].Status === 'Частично доступен') partial++;
+                else unavailable++;
+            }
+
+            document.getElementById('statAvailable').textContent = available;
+            document.getElementById('statPartial').textContent = partial;
+            document.getElementById('statUnavailable').textContent = unavailable;
+            document.getElementById('statTotal').textContent = results.length;
+        }
+
+        function updateResultsList() {
+            var resultsList = document.getElementById('resultsList');
+            resultsList.innerHTML = '';
+
+            for (var i = 0; i < results.length; i++) {
+                var result = results[i];
+                var statusClass = result.Status === 'Доступен' ? 'available' : 
+                                  result.Status === 'Частично доступен' ? 'partial' : 'unavailable';
+                var statusTextClass = 'status-' + statusClass;
+
+                var resultItem = document.createElement('div');
+                resultItem.className = 'result-item ' + statusClass;
+                
+                var resultInfo = document.createElement('div');
+                resultInfo.className = 'result-info';
+                
+                var nodeDiv = document.createElement('div');
+                nodeDiv.className = 'result-node';
+                nodeDiv.textContent = result.Node;
+                
+                var commentDiv = document.createElement('div');
+                commentDiv.className = 'result-comment';
+                commentDiv.textContent = result.Comment;
+                
+                var detailsDiv = document.createElement('div');
+                detailsDiv.className = 'result-details';
+                detailsDiv.textContent = 'ICMP Ping | Время: ' + result.AvgTime + ' мс (мин: ' + 
+                    result.MinTime + ', макс: ' + result.MaxTime + ') | Потери: ' + 
+                    result.LostPercent + '% | Пакеты: ' + result.SuccessPackets;
+                
+                resultInfo.appendChild(nodeDiv);
+                resultInfo.appendChild(commentDiv);
+                resultInfo.appendChild(detailsDiv);
+                
+                var statusWrap = document.createElement('div');
+                statusWrap.className = 'result-status-wrap';
+                
+                var statusSpan = document.createElement('span');
+                statusSpan.className = 'result-status ' + statusTextClass;
+                statusSpan.textContent = result.Status;
+                
+                statusWrap.appendChild(statusSpan);
+                
+                resultItem.appendChild(resultInfo);
+                resultItem.appendChild(statusWrap);
+                
+                resultsList.appendChild(resultItem);
+            }
+        }
+
+        // Экспорт в CSV
+        function exportToCSV() {
+            var csv = 'Узел;Комментарий;Статус;Среднее время (мс);Мин время;Макс время;Потери (%);Успешных пакетов\n';
+            
+            for (var i = 0; i < results.length; i++) {
+                var r = results[i];
+                csv += r.Node + ';' + r.Comment + ';' + r.Status + ';' + r.AvgTime + ';' + 
+                       r.MinTime + ';' + r.MaxTime + ';' + r.LostPercent + ';' + r.SuccessPackets + '\n';
+            }
+            
+            var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            var link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'PingResults_' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '.csv';
+            link.click();
+        }
+
+        document.getElementById('exportBtn').onclick = exportToCSV;
+
+        // Проверка сервера при загрузке
+        checkServerStatus();
+        setInterval(checkServerStatus, 10000);
+    </script>
+</body>
+</html>

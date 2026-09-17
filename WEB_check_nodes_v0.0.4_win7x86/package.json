@@ -1,0 +1,16 @@
+{
+  "name": "ping-checker-win7",
+  "version": "1.0.0",
+  "description": "Проверка доступности сетевых узлов (Windows 7 x86 совместимость)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "4.18.2",
+    "cors": "2.8.5"
+  },
+  "engines": {
+    "node": ">=14.0.0 <15.0.0"
+  }
+}
