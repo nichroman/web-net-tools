@@ -6,3 +6,6 @@ logs/
 scan_results*.csv
 Port*Opened.txt
 Port*Closed.txt
+
+# ярлыки, созданные установщиком (в репозиторий не попадают)
+*.lnk

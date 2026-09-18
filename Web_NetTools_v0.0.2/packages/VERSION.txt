@@ -1,6 +1,0 @@
-﻿Дистрибутив Web_NetTools v0.0.2 - состав каталога packages
-Обновлено: 2026-09-18 10:04
-check-nodes <- C:\Users\nich.roman\Documents\Coding projects\WEB_check_nodes_v0.0.4
-  версия package.json: 1.0.0
-check-ports <- C:\Users\nich.roman\Documents\Coding projects\WEB_check_ports_v0.0.1
-  версия package.json: 0.0.1
