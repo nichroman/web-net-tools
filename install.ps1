@@ -216,7 +216,7 @@ function Test-WebNetToolsIcon {
     if (-not (Test-Path $IconPath)) { return $false }
     try {
         Add-Type -AssemblyName System.Drawing
-        $icon = New-Object System.Drawing.Icon($IconPath)
+        $icon = New-Object System.Drawing.Icon -ArgumentList $IconPath
         $icon.Dispose()
         return $true
     } catch {
@@ -229,7 +229,7 @@ function Convert-WebNetToolsPngToIcon {
     try {
         Add-Type -AssemblyName System.Drawing
         $image = [System.Drawing.Image]::FromFile($PngPath)
-        $bitmap = New-Object System.Drawing.Bitmap($image, 32, 32)
+        $bitmap = New-Object System.Drawing.Bitmap -ArgumentList @($image, 32, 32)
         $handle = $bitmap.GetHicon()
         $icon = [System.Drawing.Icon]::FromHandle($handle)
         $stream = [System.IO.File]::Create($IconPath)
@@ -244,30 +244,36 @@ function Convert-WebNetToolsPngToIcon {
     }
 }
 
-# Готовит launcher\webnettools.ico: берет monkey.ico из проекта, при отсутствии
-# конвертирует monkey.png
-function Install-WebNetToolsIcon {
-    param([string]$InstallRoot, [string]$SourceDir)
-    $iconTarget = Join-Path (Join-Path $InstallRoot $launcherDirName) 'webnettools.ico'
-
-    $candidates = @(
-        (Join-Path $SourceDir 'monkey.ico'),
-        (Join-Path $SourceDir 'favicon.ico')
+# Подготавливает иконку для конкретного типа ярлыка:
+#   - копирует .ico из каталога приложения/установщика, при отсутствии - конвертирует PNG.
+# Возвращает путь к готовой иконке или "" (тогда ярлык создается со стандартной иконкой).
+function Install-WebNetToolsAppIcon {
+    param(
+        [string]$InstallRoot = '',
+        [string]$SourceDir = '',
+        [string]$IconName = 'webnettools.ico',
+        [string[]]$IconCandidates = @(),
+        [string]$PngFallback = ''
     )
-    foreach ($candidate in $candidates) {
-        if (Test-Path $candidate) {
-            Copy-Item -Path $candidate -Destination $iconTarget -Force
+    $iconTarget = Join-Path (Join-Path $InstallRoot $launcherDirName) $IconName
+
+    foreach ($candidate in $IconCandidates) {
+        $source = Join-Path $SourceDir $candidate
+        if (Test-Path $source) {
+            Copy-Item -Path $source -Destination $iconTarget -Force
             if (Test-WebNetToolsIcon -IconPath $iconTarget) { return $iconTarget }
-            Show-Warn ('Не удалось прочитать иконку ' + $candidate)
+            Show-Warn ('Не удалось прочитать иконку ' + $source)
         }
     }
 
-    $png = Join-Path $SourceDir 'monkey.png'
-    if (Test-Path $png) {
-        if (Convert-WebNetToolsPngToIcon -PngPath $png -IconPath $iconTarget) { return $iconTarget }
+    if ($PngFallback -ne '') {
+        $png = Join-Path $SourceDir $PngFallback
+        if ((Test-Path $png) -and (Convert-WebNetToolsPngToIcon -PngPath $png -IconPath $iconTarget)) {
+            return $iconTarget
+        }
     }
 
-    Show-Warn 'Иконка не найдена, ярлыки будут созданы со стандартной иконкой'
+    Show-Warn ('Иконка ' + $IconName + ' не найдена в ' + $SourceDir)
     return ''
 }
 
@@ -533,10 +539,21 @@ try {
         }
     }
 
-    # --- 7. иконка --------------------------------------------------------
-    Show-Head 'Подготовка иконки'
-    $iconPath = Install-WebNetToolsIcon -InstallRoot $InstallDir -SourceDir $NodesSource
-    if ($iconPath -ne '') { Show-Ok ('Иконка: ' + $iconPath) }
+    # --- 7. иконки --------------------------------------------------------
+    # Ярлыки приложений получают собственные иконки:
+    #   проверка узлов - webnettools_PingNode.ico, проверка портов - webnettools_PortScan.ico,
+    #   общая иконка (остановка серверов) - webnettools.ico.
+    Show-Head 'Подготовка иконок'
+    $iconNodes = Install-WebNetToolsAppIcon -InstallRoot $InstallDir -SourceDir $projectDir -IconName 'webnettools_PingNode.ico' -IconCandidates @('webnettools_PingNode.ico') -PngFallback ''
+    $iconPorts = Install-WebNetToolsAppIcon -InstallRoot $InstallDir -SourceDir $projectDir -IconName 'webnettools_PortScan.ico' -IconCandidates @('webnettools_PortScan.ico') -PngFallback ''
+    $iconCommon = Install-WebNetToolsAppIcon -InstallRoot $InstallDir -SourceDir $NodesSource -IconName 'webnettools.ico' -IconCandidates @('monkey.ico', 'favicon.ico') -PngFallback 'monkey.png'
+
+    if ($iconNodes -ne '') { Show-Ok ('Иконка проверки узлов: ' + $iconNodes) } else { $iconNodes = $iconCommon }
+    if ($iconPorts -ne '') { Show-Ok ('Иконка проверки портов: ' + $iconPorts) } else { $iconPorts = $iconCommon }
+    if ($iconCommon -ne '') { Show-Ok ('Общая иконка         : ' + $iconCommon) }
+    if (($iconNodes -eq '') -and ($iconPorts -eq '') -and ($iconCommon -eq '')) {
+        Show-Warn 'Иконки не найдены, ярлыки будут созданы со стандартной иконкой Windows'
+    }
 
     # --- 8. ярлыки --------------------------------------------------------
     if (-not $SkipShortcuts) {
@@ -567,10 +584,10 @@ try {
 
         New-WebNetToolsShortcut -Path (Join-Path $DesktopDir ($shortcutNodesName + '.lnk')) `
             -TargetPath $launcherTarget -Arguments $nodesArguments -WorkingDirectory $nodesTarget `
-            -IconLocation $iconPath -Description 'Проверка доступности сетевых узлов (WEB_check_nodes v0.0.4)'
+            -IconLocation $iconNodes -Description 'Проверка доступности сетевых узлов (WEB_check_nodes v0.0.4)'
         New-WebNetToolsShortcut -Path (Join-Path $DesktopDir ($shortcutPortsName + '.lnk')) `
             -TargetPath $launcherTarget -Arguments $portsArguments -WorkingDirectory $portsTarget `
-            -IconLocation $iconPath -Description 'Сканер TCP-портов (WEB_check_ports v0.0.1)'
+            -IconLocation $iconPorts -Description 'Сканер TCP-портов (WEB_check_ports v0.0.1)'
         Show-Ok ('Рабочий стол: ' + $shortcutNodesName + '.lnk')
         Show-Ok ('Рабочий стол: ' + $shortcutPortsName + '.lnk')
 
@@ -578,14 +595,14 @@ try {
         New-Item -ItemType Directory -Path $menuDir -Force | Out-Null
         New-WebNetToolsShortcut -Path (Join-Path $menuDir 'Проверка узлов.lnk') `
             -TargetPath $launcherTarget -Arguments $nodesArguments -WorkingDirectory $nodesTarget `
-            -IconLocation $iconPath -Description 'Проверка доступности сетевых узлов'
+            -IconLocation $iconNodes -Description 'Проверка доступности сетевых узлов'
         New-WebNetToolsShortcut -Path (Join-Path $menuDir 'Проверка портов.lnk') `
             -TargetPath $launcherTarget -Arguments $portsArguments -WorkingDirectory $portsTarget `
-            -IconLocation $iconPath -Description 'Сканер TCP-портов'
+            -IconLocation $iconPorts -Description 'Сканер TCP-портов'
         if (-not $useFallback) {
             New-WebNetToolsShortcut -Path (Join-Path $menuDir ($shortcutStopName + '.lnk')) `
                 -TargetPath $stopTarget -Arguments $stopArguments -WorkingDirectory $InstallDir `
-                -IconLocation $iconPath -Description 'Остановка серверов Web_NetTools'
+                -IconLocation $iconCommon -Description 'Остановка серверов Web_NetTools'
         }
         Show-Ok ('Меню "Пуск": ' + $menuDir)
     }
